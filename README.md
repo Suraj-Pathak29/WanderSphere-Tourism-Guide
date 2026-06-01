@@ -70,15 +70,22 @@ Visit http://127.0.0.1:8000
 ---
 
 ## 📁 Project Structure
+
+```text
 tourism_guide/
--├── accounts/          ← Custom user model with 9 interest dimensions
--├── destinations/      ← Destination & Utility models, map view
--├── recommendations/   ← Hybrid ML engine (engine.py)
--├── ratings/           ← AJAX rating system + background SVD rebuild
--├── safety/            ← Season-aware safety classification
--├── scripts/           ← Dataset preprocessing pipeline
--├── templates/         ← Bootstrap 5 HTML templates
--└── static/            ← CSS & JS
+├── accounts/                  # Custom user model with 9 interest dimensions
+├── destinations/              # Destination & Utility models, map integration
+├── recommendations/
+│   └── engine.py              # Hybrid recommendation engine
+├── ratings/                   # AJAX rating system and SVD model updates
+├── safety/                    # Season-aware safety classification module
+├── scripts/                   # Dataset preprocessing and utility scripts
+├── templates/                 # Bootstrap 5 HTML templates
+├── static/                    # CSS, JavaScript, and static assets
+├── manage.py                  # Django management script
+├── requirements.txt           # Project dependencies
+└── README.md                  # Project documentation
+```
 
 ---
 
