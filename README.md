@@ -40,7 +40,7 @@ Auth      : Django AbstractUser with 9-dimension preference profiling
 
 
 # 1. Clone the repository
-git clone https://github.com/Suraj-Pathak29/WanderSphere-Tourism-Guide
+git clone https://github.com/Suraj-Pathak29/WanderSphere-Tourism-Guide.git
 cd wandersphere
 
 # 2. Create and activate virtual environment
