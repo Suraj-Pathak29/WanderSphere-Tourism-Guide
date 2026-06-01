@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+
+  <h2 class="fw-bold mb-4"><i class="bi bi-person-circle me-2 text-primary"></i>My Profile</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="card shadow-sm border-0 rounded-4 mb-4 p-4">
+      <h5 class="fw-bold mb-3">Personal Information</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">First Name</label>
+          {{ form.first_name }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Last Name</label>
+          {{ form.last_name }}
+        </div>
+        <div class="col-12">
+          <label class="form-label small fw-semibold">Email</label>
+          {{ form.email }}
+        </div>
+        <div class="col-12">
+          <label class="form-label small fw-semibold">Bio</label>
+          {{ form.bio }}
+        </div>
+        <div class="col-12">
+          <label class="form-label small fw-semibold">Profile Picture</label>
+          {% if user.avatar %}
+            <div class="mb-2">
+              <img src="{{ user.avatar.url }}" class="rounded-circle" width="60" height="60" style="object-fit:cover;">
+            </div>
+          {% endif %}
+          {{ form.avatar }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 mb-4 p-4">
+      <h5 class="fw-bold mb-3">Travel Preferences</h5>
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Preferred Budget</label>
+        {{ form.preferred_budget }}
+      </div>
+      <h6 class="small fw-semibold text-muted mb-3">Interest Scores (1–5)</h6>
+      <div class="row g-3">
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Culture</label>
+          {{ form.pref_culture }}
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Adventure</label>
+          {{ form.pref_adventure }}
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Nature</label>
+          {{ form.pref_nature }}
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Beaches</label>
+          {{ form.pref_beaches }}
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Nightlife</label>
+          {{ form.pref_nightlife }}
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Cuisine</label>
+          {{ form.pref_cuisine }}
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Wellness</label>
+          {{ form.pref_wellness }}
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Urban</label>
+          {{ form.pref_urban }}
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label small">Seclusion</label>
+          {{ form.pref_seclusion }}
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary px-4 py-2">
+      <i class="bi bi-save me-2"></i>Save Changes
+    </button>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary px-4 py-2 ms-2">Cancel</a>
+  </form>
+</div>
+{% endblock %}

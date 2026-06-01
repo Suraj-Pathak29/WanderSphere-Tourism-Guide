@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center py-5"
+     style="background:linear-gradient(135deg,#0f172a,#1a3a5c)">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-5">
+
+        <!-- Brand -->
+        <div class="text-center mb-4">
+          <a href="{% url 'home' %}" class="text-decoration-none">
+            <div class="fs-2 mb-1">🌍</div>
+            <h3 class="text-white fw-bold">WanderSphere</h3>
+            <p class="text-white-50 small">Sign in to your account</p>
+          </a>
+        </div>
+
+        <div class="card border-0 shadow-lg rounded-4 p-4">
+          <h4 class="fw-bold mb-4 text-center">Welcome Back</h4>
+
+          <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </button>
+          </form>
+
+          <hr>
+          <p class="text-center text-muted small mb-0">
+            Don't have an account?
+            <a href="{% url 'signup' %}" class="fw-semibold text-primary">Create one free</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

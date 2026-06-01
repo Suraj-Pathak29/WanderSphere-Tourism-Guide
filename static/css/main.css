@@ -1,0 +1,133 @@
+/* ================================================================
+   WanderSphere – Tourism Guide System  |  Custom CSS
+   (Bootstrap 5 is loaded from CDN; this file adds project styles)
+   ================================================================ */
+
+/* ── Google Font via CDN ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+body { font-family: 'Inter', system-ui, sans-serif; }
+
+/* ── Colour palette overrides ── */
+:root {
+  --bs-primary:   #0d6efd;
+  --bs-success:   #198754;
+  --bs-danger:    #dc3545;
+  --accent-teal:  #20c997;
+  --dark-navy:    #0f172a;
+}
+
+/* ── Smooth scrolling ── */
+html { scroll-behavior: smooth; }
+
+/* ── Destination cards ── */
+.dest-card {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease;
+}
+.dest-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 50px rgba(13,110,253,.12) !important;
+}
+.dest-card .card-img-top  { height: 190px; object-fit: cover; }
+.card-img-placeholder {
+  height: 190px;
+  background: linear-gradient(135deg, #dbeafe, #d1fae5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem;
+}
+
+/* ── Budget badge colours ── */
+.badge-budget   { background: #198754 !important; }
+.badge-midrange { background: #0d6efd !important; }
+.badge-luxury   { background: #6f42c1 !important; }
+.badge-safe     { background: #198754 !important; }
+.badge-risky    { background: #dc3545 !important; }
+.badge-unknown  { background: #6c757d !important; }
+
+/* ── Hero ── */
+.hero-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1a3a5c 100%);
+  padding: 100px 0 90px;
+  position: relative; overflow: hidden;
+}
+.hero-section::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0; height: 64px;
+  background: #f8fafc;
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
+
+/* ── Stat cards ── */
+.stat-card { border-radius: 16px; padding: 1.4rem; }
+
+/* ── Section title marker ── */
+.section-title {
+  font-size: 1.05rem; font-weight: 700;
+  border-left: 4px solid var(--accent-teal);
+  padding-left: .8rem; margin-bottom: 1.25rem;
+}
+
+/* ── Star widget ── */
+.star-rating { font-size: 1.8rem; display: flex; gap: .1rem; justify-content: center; }
+.star-rating .star { color: #dee2e6; cursor: pointer; transition: color .12s, transform .12s; }
+.star-rating .star.active,
+.star-rating .star.hover  { color: #ffc107; transform: scale(1.15); }
+
+/* ── Match score pill ── */
+.match-score-pill {
+  background: rgba(0,0,0,.55);
+  color: #fff; font-size: .72rem; font-weight: 700;
+  padding: .25rem .6rem; border-radius: 20px;
+}
+
+/* ── Score progress bars ── */
+.score-bar .progress { height: 8px; border-radius: 4px; }
+
+/* ── Leaflet map ── */
+#tourism-map { border-radius: 12px; z-index: 0; }
+
+/* ── Form cards ── */
+.form-control:focus, .form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 .25rem rgba(13,110,253,.2);
+}
+
+/* ── Toast ── */
+#toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; }
+
+/* ── Button pill ── */
+.btn-pill { border-radius: 50rem !important; }
+
+/* ── Responsive map sidebar ── */
+@media (max-width: 767px) {
+  .map-sidebar { display: none !important; }
+}
+
+/* ── Footer ── */
+footer { background: #0f172a; color: #94a3b8; }
+footer a { color: #94a3b8; text-decoration: none; transition: color .15s; }
+footer a:hover { color: #e2e8f0; }
+
+/* ── Dashboard engine banner ── */
+.engine-banner {
+  background: linear-gradient(90deg, #eff6ff, #ecfdf5);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+/* ── Spinner overlay ── */
+.spinner-overlay {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9000;
+}
+
+/* ── Dashed empty-state card ── */
+.card-dashed {
+  border: 2px dashed #dee2e6 !important;
+  border-radius: 16px;
+}

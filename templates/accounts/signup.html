@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background:linear-gradient(135deg,#0f172a,#1a3a5c);min-height:100vh">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+
+        <div class="text-center mb-4">
+          <div class="fs-2 mb-1">🌍</div>
+          <h3 class="text-white fw-bold">Join WanderSphere</h3>
+          <p class="text-white-50 small">Create your profile and get AI-powered travel recommendations</p>
+        </div>
+
+        <div class="card border-0 shadow-lg rounded-4 p-4">
+          <form method="post">
+            {% csrf_token %}
+
+            <!-- Step 1: Account Details -->
+            <h6 class="fw-bold mb-3 text-primary">
+              <span class="badge bg-primary me-2">1</span>Account Details
+            </h6>
+            <div class="row g-3 mb-4">
+              <div class="col-12">
+                <label class="form-label small fw-semibold">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}<div class="invalid-feedback d-block">{{ form.username.errors|join:", " }}</div>{% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold">Email Address</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors|join:", " }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}<div class="invalid-feedback d-block">{{ form.password1.errors|join:", " }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Confirm Password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}<div class="invalid-feedback d-block">{{ form.password2.errors|join:", " }}</div>{% endif %}
+              </div>
+            </div>
+
+            <!-- Step 2: Budget -->
+            <h6 class="fw-bold mb-3 text-primary">
+              <span class="badge bg-primary me-2">2</span>Travel Budget
+            </h6>
+            <div class="mb-4">
+              <div class="d-flex gap-2">
+                <input type="radio" class="btn-check" name="preferred_budget" id="budget_1" value="Budget">
+                <label class="btn btn-outline-primary flex-fill" for="budget_1">💰 Budget</label>
+
+                <input type="radio" class="btn-check" name="preferred_budget" id="budget_2" value="Mid-range" checked>
+                <label class="btn btn-outline-primary flex-fill" for="budget_2">🪙 Mid-range</label>
+
+                <input type="radio" class="btn-check" name="preferred_budget" id="budget_3" value="Luxury">
+                <label class="btn btn-outline-primary flex-fill" for="budget_3">💎 Luxury</label>
+              </div>
+            </div>
+
+            <!-- Step 3: Interest Scores -->
+            <h6 class="fw-bold mb-3 text-primary">
+              <span class="badge bg-primary me-2">3</span>Your Travel Interests
+              <small class="text-muted fw-normal">(1 = low, 5 = high)</small>
+            </h6>
+            <div class="row g-3 mb-4">
+
+              {% for field_info in interest_field_list %}
+              <div class="col-6 col-md-4">
+                <label class="form-label small fw-semibold mb-1">
+                  {{ field_info.emoji }} {{ field_info.label }}
+                </label>
+                <select name="{{ field_info.name }}" class="form-select form-select-sm">
+                  <option value="1">1 – Not interested</option>
+                  <option value="2">2 – Slightly</option>
+                  <option value="3" selected>3 – Moderate</option>
+                  <option value="4">4 – Very</option>
+                  <option value="5">5 – Passionate</option>
+                </select>
+              </div>
+              {% endfor %}
+
+            </div>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold btn-lg">
+              <i class="bi bi-person-check me-2"></i>Create Account & Get Recommendations
+            </button>
+          </form>
+
+          <hr>
+          <p class="text-center text-muted small mb-0">
+            Already have an account?
+            <a href="{% url 'login' %}" class="fw-semibold text-primary">Sign in</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

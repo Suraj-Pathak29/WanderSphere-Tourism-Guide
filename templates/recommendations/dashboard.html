@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}My Recommendations{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="row align-items-center mb-4">
+    <div class="col">
+      <h2 class="fw-bold mb-1">
+        <i class="bi bi-stars text-warning me-2"></i>Your Recommendations
+      </h2>
+      <p class="text-muted mb-0">
+        Personalised picks powered by our hybrid AI engine ·
+        <span class="text-primary fw-semibold">{{ rated_count }} destination{{ rated_count|pluralize }} rated</span>
+      </p>
+    </div>
+    <div class="col-auto">
+      <a href="{% url 'destination_list' %}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-compass me-1"></i>Browse All
+      </a>
+    </div>
+  </div>
+
+  <!-- How it works banner -->
+  <div class="card border-0 rounded-4 mb-4 p-3"
+       style="background:linear-gradient(135deg,#f0f4ff,#e8fff5)">
+    <div class="row g-3 text-center">
+      <div class="col-md-4">
+        <div class="fw-bold small text-primary">
+          <i class="bi bi-file-text me-1"></i>Content-Based (60%)
+        </div>
+        <div class="text-muted" style="font-size:.8rem">TF-IDF + your preference vector</div>
+      </div>
+      <div class="col-md-1 d-flex align-items-center justify-content-center text-muted fw-bold">+</div>
+      <div class="col-md-4">
+        <div class="fw-bold small text-success">
+          <i class="bi bi-people me-1"></i>Collaborative (40%)
+        </div>
+        <div class="text-muted" style="font-size:.8rem">SVD matrix from similar users</div>
+      </div>
+      <div class="col-md-1 d-flex align-items-center justify-content-center text-muted fw-bold">=</div>
+      <div class="col-md-2">
+        <div class="fw-bold small text-warning">
+          <i class="bi bi-stars me-1"></i>Hybrid Score
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Hybrid Top Picks ── -->
+  <div class="dashboard-section">
+    <div class="section-title">
+      <i class="bi bi-trophy me-2 text-warning"></i>Your Top Picks
+    </div>
+
+    {% if hybrid_results %}
+    <div class="row g-4">
+      {% for dest, score in hybrid_results %}
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card dest-card shadow-sm h-100 position-relative">
+          <!-- Match score badge -->
+          <div class="position-absolute top-0 start-0 m-2 z-1">
+            <span class="badge bg-dark bg-opacity-75 rounded-pill px-2">
+              <i class="bi bi-stars me-1 text-warning"></i>{{ score }}% match
+            </span>
+          </div>
+
+          {% if dest.image_url %}
+            <img src="{{ dest.image_url }}" class="card-img-top" alt="{{ dest.city }}">
+          {% else %}
+            <div class="card-img-placeholder">🌏</div>
+          {% endif %}
+
+          <div class="card-body d-flex flex-column">
+            <h6 class="fw-bold mb-0">{{ dest.city }}</h6>
+            <small class="text-muted mb-2">{{ dest.country }}</small>
+            <p class="small text-muted flex-grow-1" style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+              {{ dest.short_description }}
+            </p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge {% if dest.budget_level == 'Luxury' %}badge-luxury{% elif dest.budget_level == 'Budget' %}badge-budget{% else %}badge-midrange{% endif %}">
+                {{ dest.budget_level }}
+              </span>
+              <a href="{% url 'destination_detail' dest.pk %}" class="btn btn-sm btn-outline-primary">
+                Explore <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Cold-start state -->
+    <div class="card border-2 border-dashed rounded-4 p-5 text-center"
+         style="border-color:#dee2e6!important">
+      <div class="fs-1 mb-3">🗺️</div>
+      <h5 class="fw-bold">Building Your Profile…</h5>
+      <p class="text-muted mb-4">
+        Rate a few destinations so our engine can learn your taste.<br>
+        In the meantime, browse our catalogue and explore!
+      </p>
+      <a href="{% url 'destination_list' %}" class="btn btn-primary px-4">
+        <i class="bi bi-compass me-2"></i>Browse & Rate Destinations
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Places You Might Like (pure content) ── -->
+  {% if content_picks %}
+  <div class="dashboard-section">
+    <div class="section-title">
+      <i class="bi bi-sliders me-2 text-primary"></i>Places You Might Like
+      <small class="text-muted fw-normal ms-2">(based on your interests)</small>
+    </div>
+    <div class="row g-3">
+      {% for dest in content_picks %}
+      <div class="col-sm-6 col-lg-4">
+        {% include "partials/dest_card.html" with destination=dest %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Recent Ratings ── -->
+  {% if recent_ratings %}
+  <div class="dashboard-section">
+    <div class="section-title">
+      <i class="bi bi-clock-history me-2 text-secondary"></i>Your Recent Ratings
+    </div>
+    <div class="row g-3">
+      {% for rating in recent_ratings %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="card shadow-sm border-0 rounded-3 p-3 h-100">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="fw-bold mb-0">{{ rating.destination.city }}</h6>
+              <small class="text-muted">{{ rating.destination.country }}</small>
+            </div>
+            <div class="text-warning">
+              {% for i in "12345" %}
+                {% if forloop.counter <= rating.score %}★{% else %}☆{% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% if rating.review %}
+          <p class="small text-muted mt-2 mb-1">{{ rating.review|truncatewords:15 }}</p>
+          {% endif %}
+          <a href="{% url 'destination_detail' rating.destination.pk %}" class="btn btn-outline-secondary btn-sm mt-auto">
+            View <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

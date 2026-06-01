@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Interactive Map{% endblock %}
+
+{% block extra_head %}
+<style>
+  #tourism-map { height: calc(100vh - 80px); border-radius: 0; }
+  .map-sidebar {
+    position: absolute; top: 90px; left: 20px; z-index: 1000;
+    background: white; border-radius: 12px; padding: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,.15); width: 280px;
+    max-height: calc(100vh - 120px); overflow-y: auto;
+  }
+  .map-dest-item {
+    cursor: pointer; padding: .5rem .75rem; border-radius: 8px;
+    transition: background .15s;
+  }
+  .map-dest-item:hover { background: #f0f4ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="position-relative">
+
+  <!-- Sidebar -->
+  <div class="map-sidebar d-none d-md-block">
+    <h6 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Destinations</h6>
+    <input type="text" id="mapSearch" class="form-control form-control-sm mb-3" placeholder="Search…">
+    <div id="mapDestList"></div>
+  </div>
+
+  <div id="tourism-map"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const destinations = {{ destinations_json|safe }};
+
+const map = L.map('tourism-map').setView([20, 0], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+const markers = {};
+const budgetColors = { Budget: '#198754', 'Mid-range': '#0d6efd', Luxury: '#6f42c1' };
+
+destinations.forEach(d => {
+  const color = budgetColors[d.budget_level] || '#0d6efd';
+  const icon = L.divIcon({
+    html: `<div style="background:${color};border-radius:50%;width:14px;height:14px;
+                border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,
+    iconSize:[14,14], iconAnchor:[7,7],
+  });
+
+  const marker = L.marker([d.latitude, d.longitude], {icon}).addTo(map);
+  marker.bindPopup(`
+    <div style="min-width:180px">
+      <strong>${d.city}</strong><br>
+      <small class="text-muted">${d.country}</small><br>
+      <span class="badge mt-1" style="background:${color}">${d.budget_level}</span><br>
+      <p class="small mt-1 mb-1">${d.short_description ? d.short_description.substring(0,100)+'…' : ''}</p>
+      <a href="/destinations/${d.id}/" class="btn btn-sm btn-primary mt-1">View Details</a>
+    </div>
+  `);
+  markers[d.id] = { marker, data: d };
+});
+
+// Sidebar list
+const listEl = document.getElementById('mapDestList');
+function renderList(filter='') {
+  listEl.innerHTML = '';
+  destinations
+    .filter(d => `${d.city} ${d.country}`.toLowerCase().includes(filter.toLowerCase()))
+    .slice(0, 50)
+    .forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'map-dest-item';
+      el.innerHTML = `<strong class="small">${d.city}</strong><br>
+        <span class="text-muted" style="font-size:.75rem">${d.country}</span>`;
+      el.addEventListener('click', () => {
+        map.setView([d.latitude, d.longitude], 10);
+        markers[d.id]?.marker.openPopup();
+      });
+      listEl.appendChild(el);
+    });
+}
+renderList();
+document.getElementById('mapSearch').addEventListener('input', e => renderList(e.target.value));
+</script>
+{% endblock %}

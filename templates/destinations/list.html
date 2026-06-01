@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Explore Destinations{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Page header -->
+  <div class="mb-4">
+    <h2 class="fw-bold">🌍 Explore Destinations</h2>
+    <p class="text-muted">Browse {{ page_obj.paginator.count }} destinations worldwide</p>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="card shadow-sm mb-4 p-3">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold">Search</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" class="form-control"
+                 placeholder="City, country, keyword…" value="{{ search_query }}">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Region</label>
+        <select name="region" class="form-select">
+          <option value="">All Regions</option>
+          {% for r in regions %}
+          <option value="{{ r }}" {% if r == selected_region %}selected{% endif %}>
+            {% if r == "north_america" %}North America
+            {% elif r == "south_america" %}South America
+            {% elif r == "middle_east" %}Middle East
+            {% else %}{{ r|title }}
+            {% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Budget</label>
+        <select name="budget" class="form-select">
+          <option value="">All Budgets</option>
+          <option value="Budget"    {% if selected_budget == "Budget" %}selected{% endif %}>💰 Budget</option>
+          <option value="Mid-range" {% if selected_budget == "Mid-range" %}selected{% endif %}>🪙 Mid-range</option>
+          <option value="Luxury"    {% if selected_budget == "Luxury" %}selected{% endif %}>💎 Luxury</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-funnel me-1"></i>Filter
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Results grid -->
+  {% if page_obj.object_list %}
+  <div class="row g-4">
+    {% for dest in page_obj %}
+    <div class="col-sm-6 col-lg-4">
+      {% include "partials/dest_card.html" with destination=dest %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <nav class="mt-5 d-flex justify-content-center">
+    <ul class="pagination">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&region={{ selected_region }}&budget={{ selected_budget }}">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      </li>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}&q={{ search_query }}&region={{ selected_region }}&budget={{ selected_budget }}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&region={{ selected_region }}&budget={{ selected_budget }}">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-5">
+    <div class="fs-1 mb-3">🔍</div>
+    <h5>No destinations found</h5>
+    <p class="text-muted">Try changing your filters or search term.</p>
+    <a href="{% url 'destination_list' %}" class="btn btn-outline-primary">Clear Filters</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

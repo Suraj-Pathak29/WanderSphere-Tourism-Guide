@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Tourism Guide{% endblock %} | WanderSphere</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --primary:   #0d6efd;
+      --secondary: #6c757d;
+      --accent:    #20c997;
+      --dark-bg:   #0f172a;
+      --card-bg:   #1e293b;
+    }
+
+    body {
+      background: #f8fafc;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    .navbar-brand span {
+      background: linear-gradient(135deg, #0d6efd, #20c997);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+    .navbar { box-shadow: 0 1px 8px rgba(0,0,0,.08); }
+
+    /* ── Cards ── */
+    .dest-card {
+      border: none;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform .22s ease, box-shadow .22s ease;
+      height: 100%;
+    }
+    .dest-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(13,110,253,.15);
+    }
+    .dest-card .card-img-top {
+      height: 190px;
+      object-fit: cover;
+    }
+    .dest-card .card-img-placeholder {
+      height: 190px;
+      background: linear-gradient(135deg, #0d6efd22, #20c99733);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+
+    /* ── Budget badges ── */
+    .badge-budget   { background: #198754; }
+    .badge-midrange { background: #0d6efd; }
+    .badge-luxury   { background: #6f42c1; }
+
+    /* ── Safety badges ── */
+    .badge-safe  { background: #198754; }
+    .badge-risky { background: #dc3545; }
+    .badge-unknown { background: #6c757d; }
+
+    /* ── Score bar ── */
+    .score-bar .progress { height: 8px; border-radius: 4px; }
+
+    /* ── Star rating widget ── */
+    .star-rating { font-size: 1.6rem; cursor: pointer; }
+    .star-rating .star { color: #dee2e6; transition: color .15s; }
+    .star-rating .star.active,
+    .star-rating .star:hover,
+    .star-rating .star.hover { color: #ffc107; }
+
+    /* ── Hero ── */
+    .hero-section {
+      background: linear-gradient(135deg, var(--dark-bg) 0%, #1a3a5c 100%);
+      color: white;
+      padding: 90px 0 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-section::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 60px;
+      background: #f8fafc;
+      clip-path: ellipse(55% 100% at 50% 100%);
+    }
+
+    /* ── Stat counter ── */
+    .stat-card {
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    /* ── Map container ── */
+    #tourism-map { border-radius: 12px; }
+
+    /* ── Dashboard panel ── */
+    .dashboard-section { margin-bottom: 2.5rem; }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+      border-left: 4px solid var(--accent);
+      padding-left: .75rem;
+      margin-bottom: 1.25rem;
+    }
+    .match-score {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* ── Toasts ── */
+    #toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; }
+
+    /* ── Footer ── */
+    footer { background: var(--dark-bg); color: #94a3b8; }
+    footer a { color: #94a3b8; text-decoration: none; }
+    footer a:hover { color: #e2e8f0; }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'home' %}">
+      <i class="bi bi-globe2 text-primary me-1"></i>
+      <span>WanderSphere</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'destination_list' %}">
+            <i class="bi bi-compass me-1"></i>Explore
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'map' %}">
+            <i class="bi bi-map me-1"></i>Map
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'safety_overview' %}">
+            <i class="bi bi-shield-check me-1"></i>Safety
+          </a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'dashboard' %}">
+            <i class="bi bi-stars me-1"></i>Recommendations
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+            {% if user.avatar %}
+              <img src="{{ user.avatar.url }}" class="rounded-circle" width="28" height="28" style="object-fit:cover;">
+            {% else %}
+              <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white"
+                   style="width:28px;height:28px;font-size:.75rem;font-weight:700;">
+                {{ user.username|first|upper }}
+              </div>
+            {% endif %}
+            {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'my_ratings' %}"><i class="bi bi-star me-2"></i>My Ratings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+        <li class="nav-item">
+          <a class="btn btn-primary btn-sm ms-2" href="{% url 'signup' %}">Sign Up Free</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Django messages ── -->
+{% if messages %}
+<div id="toast-container">
+  {% for message in messages %}
+  <div class="toast show align-items-center text-bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}primary{% endif %} border-0 mb-2"
+       role="alert" data-bs-delay="4000" data-bs-autohide="true">
+    <div class="d-flex">
+      <div class="toast-body">{{ message }}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── Page content ── -->
+{% block content %}{% endblock %}
+
+<!-- ── Footer ── -->
+<footer class="mt-5 py-4">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4">
+        <strong class="text-white">WanderSphere</strong>
+        <p class="small mb-0 mt-1">BCA Final Year Project · Tourism Guide System</p>
+      </div>
+      <div class="col-md-4 text-center">
+        <small>Hybrid ML Recommendation Engine</small>
+      </div>
+      <div class="col-md-4 text-end">
+        <a href="{% url 'home' %}" class="me-3">Home</a>
+        <a href="{% url 'destination_list' %}" class="me-3">Explore</a>
+        <a href="{% url 'safety_overview' %}">Safety</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  // Auto-hide toasts
+  document.querySelectorAll('.toast').forEach(el => new bootstrap.Toast(el).show());
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

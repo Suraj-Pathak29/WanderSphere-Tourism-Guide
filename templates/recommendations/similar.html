@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Similar Destinations{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="mb-4">
+    <a href="{% url 'destination_detail' source_pk %}" class="btn btn-outline-secondary btn-sm mb-3">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+    <h3 class="fw-bold">Similar Destinations</h3>
+    <p class="text-muted">Found using TF-IDF cosine similarity on destination features.</p>
+  </div>
+  <div class="row g-4">
+    {% for dest in destinations %}
+    <div class="col-sm-6 col-lg-4">
+      {% include "partials/dest_card.html" with destination=dest %}
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">
+        No similar destinations found yet. Try running the preprocessing script first.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

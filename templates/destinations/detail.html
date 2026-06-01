@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}{{ destination.city }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- ── Left column: main info ── -->
+    <div class="col-lg-8">
+
+      <!-- Header card -->
+      <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        {% if destination.image_url %}
+          <img src="{{ destination.image_url }}" class="card-img-top" style="height:320px;object-fit:cover;" alt="{{ destination.city }}">
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
+               style="height:200px;font-size:5rem;">🌏</div>
+        {% endif %}
+        <div class="card-body p-4">
+          <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+            <div>
+              <h1 class="fw-bold mb-1">{{ destination.city }}</h1>
+              <p class="text-muted mb-2">
+                <i class="bi bi-geo-alt-fill text-primary me-1"></i>
+                {{ destination.country }} &middot; {{ destination.region|title }}
+              </p>
+            </div>
+            <div class="d-flex flex-column align-items-end gap-2">
+              <!-- Safety -->
+              <span class="badge badge-{{ safety_status|lower }} fs-6 px-3 py-2">
+                {% if safety_status == 'Safe' %}
+                  <i class="bi bi-shield-check me-1"></i>Safe This Month
+                {% else %}
+                  <i class="bi bi-exclamation-triangle me-1"></i>{{ safety_status }}
+                {% endif %}
+              </span>
+              <!-- Budget -->
+              <span class="badge {% if destination.budget_level == 'Budget' %}badge-budget{% elif destination.budget_level == 'Luxury' %}badge-luxury{% else %}badge-midrange{% endif %} px-3 py-2">
+                {{ destination.budget_level }}
+              </span>
+            </div>
+          </div>
+
+          <p class="lead mb-3">{{ destination.short_description }}</p>
+
+          <!-- Quick facts chips -->
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            {% for dur in ideal_durations %}
+              <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i>{{ dur }}</span>
+            {% endfor %}
+            {% for month in best_months %}
+              <span class="badge bg-success bg-opacity-10 text-success border border-success">
+                <i class="bi bi-sun me-1"></i>Best: {{ month }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature scores -->
+      <div class="card shadow-sm border-0 rounded-4 mb-4 p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Destination Profile</h5>
+        <div class="row g-2 score-bar">
+          {% for label, value in dest_scores %}
+          <div class="col-6">
+            <div class="d-flex justify-content-between small mb-1">
+              <span>{{ label }}</span><strong>{{ value }}/5</strong>
+            </div>
+            <div class="progress">
+              <div class="progress-bar bg-primary" style="width:{{ value|floatformat:0 }}0%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Climate chart -->
+      <div class="card shadow-sm border-0 rounded-4 mb-4 p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-thermometer-half me-2 text-danger"></i>Monthly Temperature (°C)</h5>
+        <canvas id="climateChart" height="100"></canvas>
+      </div>
+
+      <!-- Leaflet map -->
+      <div class="card shadow-sm border-0 rounded-4 mb-4 p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-map me-2 text-success"></i>Map & Local Utilities</h5>
+        <div id="tourism-map" style="height:380px;"></div>
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          <span class="badge bg-info text-dark"><i class="bi bi-bank me-1"></i>ATM</span>
+          <span class="badge bg-secondary"><i class="bi bi-gender-ambiguous me-1"></i>Washroom</span>
+          <span class="badge bg-danger"><i class="bi bi-hospital me-1"></i>Hospital</span>
+          <span class="badge bg-dark"><i class="bi bi-shield me-1"></i>Police</span>
+          <span class="badge bg-warning text-dark"><i class="bi bi-building me-1"></i>Hotel</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Right column: ratings + safety ── -->
+    <div class="col-lg-4">
+
+      <!-- Rating summary -->
+      <div class="card shadow-sm border-0 rounded-4 mb-4 p-4 text-center">
+        <h5 class="fw-bold mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Community Rating</h5>
+        <div class="display-4 fw-bold text-primary">{{ avg_rating }}</div>
+        <div class="text-warning fs-4 mb-1">
+          {% for i in "12345" %}
+            {% if forloop.counter <= avg_rating %}★{% else %}☆{% endif %}
+          {% endfor %}
+        </div>
+        <div class="text-muted small">{{ rating_count }} review{{ rating_count|pluralize }}</div>
+      </div>
+
+      <!-- Star rating widget -->
+      {% if user.is_authenticated %}
+      <div class="card shadow-sm border-0 rounded-4 mb-4 p-4">
+        <h5 class="fw-bold mb-3">
+          {% if user_rating %}
+            <i class="bi bi-pencil me-2 text-warning"></i>Update Your Rating
+          {% else %}
+            <i class="bi bi-star me-2 text-warning"></i>Rate This Destination
+          {% endif %}
+        </h5>
+
+        <div class="star-rating mb-3 text-center" id="starWidget">
+          {% for i in "12345" %}
+          <span class="star {% if user_rating and forloop.counter <= user_rating.score %}active{% endif %}"
+                data-value="{{ forloop.counter }}">★</span>
+          {% endfor %}
+        </div>
+        <div id="ratingFeedback" class="text-center small text-muted mb-3">
+          {% if user_rating %}Your current rating: {{ user_rating.score }} ★{% else %}Click to rate{% endif %}
+        </div>
+
+        <textarea id="reviewText" class="form-control mb-3" rows="3"
+                  placeholder="Share your experience (optional)…">{% if user_rating %}{{ user_rating.review }}{% endif %}</textarea>
+
+        <button id="submitRating" class="btn btn-primary w-100" disabled>
+          <i class="bi bi-send me-2"></i>Submit Rating
+        </button>
+      </div>
+      {% else %}
+      <div class="card shadow-sm border-0 rounded-4 mb-4 p-4 text-center">
+        <i class="bi bi-star fs-2 text-warning mb-2"></i>
+        <p class="mb-3">Login to rate this destination and get personalised picks.</p>
+        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary w-100">Login to Rate</a>
+      </div>
+      {% endif %}
+
+      <!-- Safety detail card -->
+      <div class="card shadow-sm border-0 rounded-4 mb-4 p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-shield-check me-2 text-success"></i>Safety This Month</h5>
+        <div class="text-center mb-3">
+          <span class="badge badge-{{ safety_status|lower }} fs-5 px-4 py-2">
+            {{ safety_status }}
+          </span>
+        </div>
+        <a href="{% url 'destination_safety' destination.pk %}" class="btn btn-outline-secondary btn-sm w-100">
+          <i class="bi bi-info-circle me-1"></i>Full Safety Report
+        </a>
+      </div>
+
+      <!-- Similar destinations link -->
+      <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h5 class="fw-bold mb-2"><i class="bi bi-grid me-2 text-accent"></i>Similar Places</h5>
+        <a href="{% url 'similar_destinations' destination.pk %}" class="btn btn-outline-primary btn-sm w-100">
+          Find Similar Destinations
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Climate Chart ──────────────────────────────────────────────────────────
+const ctx = document.getElementById('climateChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{ months|safe }},
+    datasets: [{
+      label: 'Avg Temp (°C)',
+      data: {{ avg_temps|safe }},
+      borderColor: '#0d6efd',
+      backgroundColor: 'rgba(13,110,253,.1)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#0d6efd',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { title: { display: true, text: '°C' } } }
+  }
+});
+
+// ── Leaflet Map ────────────────────────────────────────────────────────────
+const map = L.map('tourism-map').setView(
+  [{{ destination.latitude }}, {{ destination.longitude }}], 13
+);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Main destination marker
+const destIcon = L.divIcon({
+  html: '<div style="background:#0d6efd;border-radius:50%;width:18px;height:18px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>',
+  iconSize: [18, 18], iconAnchor: [9, 9]
+});
+L.marker([{{ destination.latitude }}, {{ destination.longitude }}], {icon: destIcon})
+  .addTo(map)
+  .bindPopup('<strong>{{ destination.city }}</strong><br>{{ destination.country }}')
+  .openPopup();
+
+// Utility markers
+const utilColors = { ATM: '#17a2b8', Washroom: '#6c757d', Hospital: '#dc3545', Police: '#212529', Hotel: '#ffc107' };
+const utilities = {{ utils_json|safe }};
+utilities.forEach(u => {
+  const color = utilColors[u.type] || '#666';
+  const icon = L.divIcon({
+    html: `<div style="background:${color};border-radius:4px;width:14px;height:14px;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,
+    iconSize: [14,14], iconAnchor: [7,7]
+  });
+  L.marker([u.lat, u.lng], {icon})
+    .addTo(map)
+    .bindPopup(`<strong>${u.name}</strong><br><span class="badge" style="background:${color}">${u.type}</span><br>${u.address}`);
+});
+
+// ── Star Rating Widget ─────────────────────────────────────────────────────
+{% if user.is_authenticated %}
+let selectedScore = {{ user_rating.score|default:"0" }};
+const stars     = document.querySelectorAll('.star');
+const feedback  = document.getElementById('ratingFeedback');
+const submitBtn = document.getElementById('submitRating');
+
+stars.forEach(star => {
+  star.addEventListener('mouseenter', () => {
+    const val = +star.dataset.value;
+    stars.forEach(s => s.classList.toggle('hover', +s.dataset.value <= val));
+  });
+  star.addEventListener('mouseleave', () => {
+    stars.forEach(s => s.classList.remove('hover'));
+  });
+  star.addEventListener('click', () => {
+    selectedScore = +star.dataset.value;
+    stars.forEach(s => s.classList.toggle('active', +s.dataset.value <= selectedScore));
+    feedback.textContent = `You selected: ${selectedScore} ★`;
+    submitBtn.disabled = false;
+  });
+});
+
+submitBtn.addEventListener('click', async () => {
+  if (!selectedScore) return;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting…';
+
+  const resp = await fetch('{% url "rate_destination" destination.pk %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}',
+    },
+    body: JSON.stringify({
+      score: selectedScore,
+      review: document.getElementById('reviewText').value,
+    }),
+  });
+  const data = await resp.json();
+  if (resp.ok) {
+    submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Saved!';
+    submitBtn.classList.replace('btn-primary', 'btn-success');
+    feedback.textContent = `Rating saved: ${data.score} ★`;
+  } else {
+    submitBtn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Error';
+    submitBtn.classList.replace('btn-primary', 'btn-danger');
+    submitBtn.disabled = false;
+  }
+});
+{% endif %}
+</script>
+{% endblock %}

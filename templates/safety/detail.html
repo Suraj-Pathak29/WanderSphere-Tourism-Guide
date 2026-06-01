@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Safety – {{ destination.city }}{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+  <a href="{% url 'safety_overview' %}" class="btn btn-outline-secondary btn-sm mb-4">
+    <i class="bi bi-arrow-left me-1"></i>Back to Safety Guide
+  </a>
+
+  <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div>
+        <h3 class="fw-bold mb-0">{{ destination.city }}</h3>
+        <small class="text-muted">{{ destination.country }}</small>
+      </div>
+      <span class="badge badge-{{ safety_status|lower }} fs-5 px-3 py-2">
+        {% if safety_status == 'Safe' %}
+          <i class="bi bi-shield-check me-1"></i>Safe
+        {% else %}
+          <i class="bi bi-exclamation-triangle me-1"></i>{{ safety_status }}
+        {% endif %}
+      </span>
+    </div>
+
+    <hr>
+
+    <h6 class="fw-bold">📅 {{ current_month }} Conditions</h6>
+    {% if current_temp %}
+    <div class="row g-3 mb-3">
+      <div class="col-4 text-center">
+        <div class="fs-4 fw-bold text-primary">{{ current_temp.avg }}°C</div>
+        <small class="text-muted">Average</small>
+      </div>
+      <div class="col-4 text-center">
+        <div class="fs-4 fw-bold text-danger">{{ current_temp.max }}°C</div>
+        <small class="text-muted">Max</small>
+      </div>
+      <div class="col-4 text-center">
+        <div class="fs-4 fw-bold text-info">{{ current_temp.min }}°C</div>
+        <small class="text-muted">Min</small>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-muted">Temperature data not available.</p>
+    {% endif %}
+
+    {% if alerts %}
+    <hr>
+    <h6 class="fw-bold text-danger">⚠️ Active Safety Alerts</h6>
+    {% for alert in alerts %}
+    <div class="alert alert-danger">
+      <div class="d-flex justify-content-between">
+        <strong>{{ alert.title }}</strong>
+        <span class="badge bg-danger">{{ alert.severity }}</span>
+      </div>
+      <p class="mb-1 mt-1">{{ alert.description }}</p>
+      <small class="text-muted">Valid: {{ alert.valid_from }} → {{ alert.valid_until }}</small>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Tips -->
+    <hr>
+    <h6 class="fw-bold">🧳 General Travel Tips</h6>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Carry a copy of your passport and travel insurance.</li>
+      <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Keep local emergency numbers saved on your phone.</li>
+      <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Check nearby hospitals and ATMs on the destination map.</li>
+      <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Stay hydrated and protect against sun if avg temp &gt; 30°C.</li>
+    </ul>
+  </div>
+
+  <a href="{% url 'destination_detail' destination.pk %}" class="btn btn-primary">
+    <i class="bi bi-map me-2"></i>View Destination & Map
+  </a>
+</div>
+{% endblock %}

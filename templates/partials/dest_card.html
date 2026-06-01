@@ -1,0 +1,44 @@
+<!-- templates/partials/dest_card.html -->
+<div class="card dest-card shadow-sm h-100">
+  {% if destination.image_url %}
+    <img src="{{ destination.image_url }}" class="card-img-top" alt="{{ destination.city }}">
+  {% else %}
+    <div class="card-img-placeholder">
+      {% with icons="🏙️🏖️🏔️🌴🏛️🗺️🌍" %}
+        {{ icons|slice:destination.id|last }}🌏
+      {% endwith %}
+    </div>
+  {% endif %}
+
+  <div class="card-body d-flex flex-column">
+    <!-- Safety badge -->
+    {% with status=destination.safety_status %}
+    <span class="badge badge-{{ status|lower }} position-absolute top-0 end-0 m-2">
+      {% if status == 'Safe' %}<i class="bi bi-shield-check me-1"></i>{% else %}<i class="bi bi-exclamation-triangle me-1"></i>{% endif %}
+      {{ status }}
+    </span>
+    {% endwith %}
+
+    <h5 class="card-title fw-bold mb-0">{{ destination.city }}</h5>
+    <small class="text-muted mb-2">
+      <i class="bi bi-geo-alt me-1"></i>{{ destination.country }}
+    </small>
+
+    <p class="card-text small text-muted flex-grow-1" style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+      {{ destination.short_description }}
+    </p>
+
+    <div class="d-flex align-items-center justify-content-between mt-2">
+      <span class="badge
+        {% if destination.budget_level == 'Budget' %}badge-budget
+        {% elif destination.budget_level == 'Luxury' %}badge-luxury
+        {% else %}badge-midrange{% endif %}">
+        {% if destination.budget_level == 'Budget' %}💰{% elif destination.budget_level == 'Luxury' %}💎{% else %}🪙{% endif %}
+        {{ destination.budget_level }}
+      </span>
+      <a href="{% url 'destination_detail' destination.pk %}" class="btn btn-sm btn-outline-primary">
+        Explore <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+</div>
