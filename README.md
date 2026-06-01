@@ -92,4 +92,4 @@ tourism_guide/
 ## 👤 Author
 
 **Suraj Pathak** — BCA, KCC Institute (GGSIPU)  
-[LinkedIn](linkedin.com/in/suraj-pathak-1b6575351) · [GitHub](https://github.com/Suraj-Pathak29)
+[LinkedIn](https://linkedin.com/in/suraj-pathak-1b6575351) · [GitHub](https://github.com/Suraj-Pathak29)
